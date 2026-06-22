@@ -47,7 +47,7 @@ RULES
 2. "meals" array: exactly 2 per day (lunch + dinner). Real, named restaurants only. Never repeat a restaurant.
 3. Every sightseeing place must be unique across all days. Real GPS coordinates for ${data.destination}.
 4. Schedule optimally: iconic monuments early morning (6-9 AM), museums mid-morning (9-11 AM), indoor venues at noon, parks/markets late afternoon (4-7 PM), illuminated sights evening.
-5. Day 1: account for arrival time. Last day: account for departure time.
+5. Day 1: first activity must start AFTER arrival time${data.arrivalTime ? ` (${data.arrivalTime})` : ""} plus ~1 hour for travel/check-in. Do not schedule anything before the traveler has arrived and checked in.${data.checkInTime ? ` Hotel check-in is ${data.checkInTime}.` : ""} Last day: all activities must END before check-out${data.checkOutTime ? ` (${data.checkOutTime})` : ""} and departure${data.departureTime ? ` (${data.departureTime})` : ""}. Do not schedule anything that would conflict with packing and leaving.
 6. All prices in INR (₹). Conversions: 1 USD=₹83, 1 EUR=₹90, 1 GBP=₹105, 1 AED=₹23.${data.mustVisit ? `\n7. Include ALL must-visit places: ${data.mustVisit}` : ""}
 
 OUTPUT JSON:
