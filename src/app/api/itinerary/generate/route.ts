@@ -137,8 +137,9 @@ export async function POST(request: NextRequest) {
 
       try {
         let fullText = "";
-        let lastErr: unknown = null;
+        let geminiErr: string | null = null;
         let lastRateLimitErr: unknown = null;
+        let lastGroqErr: unknown = null;
 
         // ── Gemini first (1M TPM, 1500 RPD free) ─────────────────────────────
         if (process.env.GOOGLE_AI_API_KEY) {
@@ -151,11 +152,11 @@ export async function POST(request: NextRequest) {
               });
               const result = await model.generateContent(prompt);
               fullText = result.response.text();
-              if (fullText) break;
+              if (fullText) { geminiErr = null; break; }
             } catch (err) {
-              lastErr = err;
+              geminiErr = err instanceof Error ? err.message : String(err);
               if (isRateLimit(err)) lastRateLimitErr = err;
-              console.warn(`[generate] gemini/${modelName} failed:`, err instanceof Error ? err.message : err);
+              console.warn(`[generate] gemini/${modelName} failed:`, geminiErr);
               fullText = "";
             }
           }
@@ -176,20 +177,26 @@ export async function POST(request: NextRequest) {
               }
               if (text) { fullText = text; break; }
             } catch (err) {
-              lastErr = err;
+              lastGroqErr = err;
               if (isRateLimit(err)) lastRateLimitErr = err;
               if (!isSkippable(err)) throw err;
-              console.warn(`[generate] groq/${id} failed, trying next`);
+              console.warn(`[generate] groq/${id} failed:`, err instanceof Error ? err.message : err);
             }
           }
         }
 
         if (!fullText) {
+          // Gemini failed with non-rate-limit error (e.g. invalid API key) — surface it
+          if (geminiErr && !isRateLimit({ message: geminiErr })) {
+            const clean = geminiErr.replace(/\[.*?\]/g, "").trim();
+            throw new Error(`Gemini error: ${clean || geminiErr}`);
+          }
+          // Both rate limited
           if (lastRateLimitErr) {
             const wait = extractWaitTime(lastRateLimitErr);
             throw new Error(wait ? `AI is busy. Try again in ${wait}.` : "AI is busy. Try again in a minute.");
           }
-          const detail = lastErr instanceof Error ? lastErr.message : String(lastErr ?? "unknown");
+          const detail = lastGroqErr instanceof Error ? lastGroqErr.message : String(lastGroqErr ?? "unknown");
           throw new Error(`Generation failed: ${detail}`);
         }
 
