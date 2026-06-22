@@ -7,7 +7,7 @@ import { createTripWithItinerary } from "@/lib/db/trips";
 import { stripGroqJson } from "@/lib/trip-utils";
 import type { TripFormData, GeneratedItinerary } from "@/types/trip";
 
-const GEMINI_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
+const GEMINI_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
 const GROQ_MODELS = [
   { id: "llama-3.1-8b-instant", maxTokens: 6000 },
   { id: "gemma2-9b-it",         maxTokens: 6000 },
@@ -146,10 +146,10 @@ export async function POST(request: NextRequest) {
           const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
           for (const modelName of GEMINI_MODELS) {
             try {
-              const model = genAI.getGenerativeModel({
-                model: modelName,
-                generationConfig: { maxOutputTokens: 8192, temperature: 0.7 },
-              });
+              const model = genAI.getGenerativeModel(
+                { model: modelName, generationConfig: { maxOutputTokens: 8192, temperature: 0.7 } },
+                { apiVersion: "v1" }
+              );
               const result = await model.generateContent(prompt);
               fullText = result.response.text();
               if (fullText) { geminiErr = null; break; }
