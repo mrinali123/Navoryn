@@ -16,7 +16,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (authed && pathname.startsWith("/auth")) {
+  const AUTH_EXCEPTIONS = ["/auth/reset-password", "/auth/callback"];
+  if (authed && pathname.startsWith("/auth") && !AUTH_EXCEPTIONS.some((p) => pathname.startsWith(p))) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
