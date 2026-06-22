@@ -10,18 +10,11 @@ export function stripGroqJson(rawText: string): string | null {
     .replace(/```/g, "")
     .trim();
 
+  // Greedy match from first { to last } — strips surrounding prose
+  const match = stripped.match(/\{[\s\S]*\}/);
+  if (match) return match[0];
+
+  // No closing } means truncated JSON — return from { so repairJson can fix it
   const start = stripped.indexOf("{");
-  if (start === -1) return null;
-
-  // Try the full text first
-  const candidate = stripped.slice(start);
-  try {
-    JSON.parse(candidate);
-    return candidate;
-  } catch {
-    // fall through to repairJson caller
-  }
-
-  // Return raw slice starting at { so repairJson can attempt a fix
-  return candidate;
+  return start === -1 ? null : stripped.slice(start);
 }
