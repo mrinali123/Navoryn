@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/lib/supabase/server";
 import { buildItineraryPrompt } from "@/lib/prompts/itinerary";
 import { createTripWithItinerary } from "@/lib/db/trips";
 import { stripGroqJson } from "@/lib/trip-utils";
 import type { TripFormData, GeneratedItinerary } from "@/types/trip";
 
-const MODELS = [
+const GEMINI_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
+const GROQ_MODELS = [
   { id: "llama-3.1-8b-instant", maxTokens: 6000 },
   { id: "gemma2-9b-it",         maxTokens: 6000 },
 ];
@@ -138,23 +140,47 @@ export async function POST(request: NextRequest) {
         let lastErr: unknown = null;
         let lastRateLimitErr: unknown = null;
 
-        for (const { id, maxTokens } of MODELS) {
-          try {
-            const stream = await groq.chat.completions.create({
-              model: id, max_tokens: maxTokens, temperature: 0.7,
-              messages: [{ role: "user", content: prompt }],
-              stream: true,
-            });
-            let text = "";
-            for await (const chunk of stream) {
-              text += chunk.choices[0]?.delta?.content ?? "";
+        // ── Gemini first (1M TPM, 1500 RPD free) ─────────────────────────────
+        if (process.env.GOOGLE_AI_API_KEY) {
+          const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
+          for (const modelName of GEMINI_MODELS) {
+            try {
+              const model = genAI.getGenerativeModel({
+                model: modelName,
+                generationConfig: { maxOutputTokens: 8192, temperature: 0.7 },
+              });
+              const result = await model.generateContent(prompt);
+              fullText = result.response.text();
+              if (fullText) break;
+            } catch (err) {
+              lastErr = err;
+              if (isRateLimit(err)) lastRateLimitErr = err;
+              console.warn(`[generate] gemini/${modelName} failed:`, err instanceof Error ? err.message : err);
+              fullText = "";
             }
-            if (text) { fullText = text; break; }
-          } catch (err) {
-            lastErr = err;
-            if (isRateLimit(err)) lastRateLimitErr = err;
-            if (!isSkippable(err)) throw err;
-            console.warn(`[generate] ${id} failed, trying next`);
+          }
+        }
+
+        // ── Groq fallback ─────────────────────────────────────────────────────
+        if (!fullText) {
+          for (const { id, maxTokens } of GROQ_MODELS) {
+            try {
+              const stream = await groq.chat.completions.create({
+                model: id, max_tokens: maxTokens, temperature: 0.7,
+                messages: [{ role: "user", content: prompt }],
+                stream: true,
+              });
+              let text = "";
+              for await (const chunk of stream) {
+                text += chunk.choices[0]?.delta?.content ?? "";
+              }
+              if (text) { fullText = text; break; }
+            } catch (err) {
+              lastErr = err;
+              if (isRateLimit(err)) lastRateLimitErr = err;
+              if (!isSkippable(err)) throw err;
+              console.warn(`[generate] groq/${id} failed, trying next`);
+            }
           }
         }
 
