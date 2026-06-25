@@ -70,7 +70,7 @@ export const POST = withLogger(
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://roamly-ten.vercel.app";
     const inviteUrl = `${appUrl}/invite/${invite_token}`;
 
     let emailSent = false;
