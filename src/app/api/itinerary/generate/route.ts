@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ITINERARY_SYSTEM_PROMPT, buildItineraryUserPrompt } from "@/lib/prompts/itinerary";
 import { createTripWithItinerary } from "@/lib/db/trips";
 import { stripGroqJson } from "@/lib/trip-utils";
-import { validateAndRepairItinerary } from "@/lib/itinerary-validator";
+import { runConstraintEngine, checkTravelFeasibility } from "@/lib/constraint-engine";
 import type { TripFormData, GeneratedItinerary } from "@/types/trip";
 import { withLogger, getLog } from "@/lib/with-logger";
 import { estimateTokens } from "@/lib/prompts/itinerary";
@@ -450,35 +450,88 @@ export const POST = withLogger("itinerary.generate", async (request: NextRequest
 
         clearInterval(statusInterval);
 
-        // ── Post-generation validation + repair ────────────────────────────
+        // ── Constraint engine ──────────────────────────────────────────────
         send({ type: "status", message: "Validating schedule logic...", progress: 88 });
 
-        const { repaired, issueCount, issues } = validateAndRepairItinerary(itinerary, formData);
+        let constraintResult = runConstraintEngine(itinerary, formData);
 
-        if (issueCount > 0) {
+        // Log every auto-fix made by the engine
+        for (const msg of constraintResult.fixLog) {
+          log.warn({ event: "constraint.autofix" }, msg);
+        }
+
+        if (constraintResult.violations.length > 0) {
           log.warn(
-            { issueCount, issues, event: "itinerary.repaired" },
-            "validator repaired scheduling issues"
+            {
+              violationCount: constraintResult.violations.length,
+              violations: constraintResult.violations,
+              event: "constraint.violations",
+            },
+            "constraint engine repaired itinerary violations"
           );
         } else {
-          log.info({ event: "itinerary.valid" }, "itinerary passed all scheduling checks");
+          log.info({ event: "constraint.passed" }, "itinerary passed all constraint checks");
+        }
+
+        // If any day has 0 places the itinerary is structurally broken — try once more
+        if (constraintResult.needsReview) {
+          log.warn(
+            { event: "constraint.regenerating" },
+            "constraint engine flagged empty days — regenerating once"
+          );
+          send({ type: "status", message: "Refining your itinerary...", progress: 85 });
+
+          try {
+            const regenItinerary = await generateItinerary(groq, formData, MAX_ATTEMPTS + 1, log);
+            constraintResult = runConstraintEngine(regenItinerary, formData);
+
+            if (constraintResult.needsReview) {
+              throw new Error(
+                "Could not generate a complete itinerary. Please try again or adjust your trip details."
+              );
+            }
+          } catch (regenErr) {
+            if (
+              regenErr instanceof Error &&
+              regenErr.message.startsWith("Could not generate")
+            ) {
+              throw regenErr;
+            }
+            throw new Error(
+              "Itinerary generation produced incomplete results. Please try again."
+            );
+          }
         }
 
         // ── Geocoding ──────────────────────────────────────────────────────
         send({ type: "status", message: "Pinning locations on the map...", progress: 92 });
         const geoStart = performance.now();
-        await geocodeItinerary(repaired, formData.destination);
+        await geocodeItinerary(constraintResult.repaired, formData.destination);
         log.info(
           { ms: Math.round(performance.now() - geoStart), event: "geocode.complete" },
           "geocoding complete"
         );
 
+        // ── Post-geocoding travel feasibility check (warnings only) ────────
+        const travelIssues = checkTravelFeasibility(constraintResult.repaired);
+        if (travelIssues.length > 0) {
+          for (const issue of travelIssues) {
+            log.warn({ event: "constraint.travel_infeasible", ...issue }, issue.message);
+          }
+        }
+
         // ── Save ───────────────────────────────────────────────────────────
         send({ type: "status", message: "Saving your itinerary...", progress: 96 });
-        const tripId = await createTripWithItinerary(formData, repaired, user.id);
+        const tripId = await createTripWithItinerary(formData, constraintResult.repaired, user.id);
 
         log.info(
-          { tripId, totalMs: Math.round(performance.now() - genStart), issueCount, event: "itinerary.complete" },
+          {
+            tripId,
+            totalMs:        Math.round(performance.now() - genStart),
+            violationCount: constraintResult.violations.length,
+            autoFixed:      constraintResult.autoFixed,
+            event:          "itinerary.complete",
+          },
           "itinerary saved"
         );
         send({ type: "complete", tripId, progress: 100 });
