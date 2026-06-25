@@ -8,21 +8,17 @@ Built as a solo full-stack project to explore LLM-driven UX: the interesting cha
 
 ---
 
-<!-- SCREENSHOT: drop a GIF or screenshot of the itinerary view here -->
-<!-- Tip: screen-record generating a 3-day trip and export as GIF with LICEcap or Kap -->
-
----
-
 ## Features
 
 - **AI itinerary generation** — Groq-powered, streams progress in real time; respects arrival/departure times, pace preference, budget, interests, dietary needs, and must-visit places
+- **Constraint engine** — deterministic rule layer validates and auto-repairs AI output before saving (deduplication, meal completeness, time window enforcement, travel feasibility)
 - **Day-by-day view** — per-day weather forecast, sightseeing places with GPS coordinates and timing rationale, restaurant picks, and quick tips
-- **Interactive map** — Leaflet map with pins for every place across the itinerary
+- **Interactive map** — Leaflet map with numbered pins for every place; real road routing via OSRM
 - **Budget tracker** — log expenses by category, visualize spending with charts
 - **Trip sharing** — public share link or email-invite collaborators
 - **AI chat assistant** — ask questions about your trip, get suggestions, iterate on plans
 - **PDF export** — download the full itinerary as a formatted PDF
-- **Offline support** — PWA with localStorage cache; saved trips work without internet
+- **Offline support** — PWA with localStorage and IndexedDB cache; saved trips work without internet
 
 ## Tech Stack
 
@@ -33,10 +29,11 @@ Built as a solo full-stack project to explore LLM-driven UX: the interesting cha
 | Styling | Tailwind CSS |
 | Auth & Database | Supabase (Postgres + Row Level Security) |
 | AI | Groq API (`llama-3.1-8b-instant`) |
-| Maps | Leaflet + react-leaflet |
+| Maps | Leaflet + react-leaflet + OSRM routing |
 | Charts | Recharts |
 | PDF | @react-pdf/renderer |
 | Email | Nodemailer (Gmail SMTP) + Resend fallback |
+| Logging | pino + AsyncLocalStorage |
 | Testing | Vitest + Testing Library |
 | Deployment | Vercel |
 
@@ -76,14 +73,10 @@ cp .env.local.example .env.local
 
 ### Database
 
-In the Supabase SQL editor, run the schema:
+In your Supabase project, open **SQL Editor → New query**, paste the contents of `supabase/schema.sql`, and run it. That single file creates all tables, indexes, RLS policies, and functions needed to run the app.
 
-```bash
-# paste and run the contents of:
-supabase/schema.sql
-```
+Then add your app URLs to **Supabase → Authentication → URL Configuration → Redirect URLs**:
 
-Also add your app URL to Supabase → Authentication → URL Configuration → Redirect URLs:
 ```
 http://localhost:3000/auth/callback
 https://your-production-domain.com/auth/callback
@@ -123,14 +116,15 @@ src/
 │   └── ui/                   # Shared primitives (GlassCard, Skeleton, ErrorBoundary)
 ├── lib/
 │   ├── db/trips.ts           # All Supabase queries
+│   ├── constraint-engine.ts  # Post-AI validation and repair layer
 │   ├── prompts/              # AI prompt builders (itinerary + chat)
-│   └── supabase/             # Client, server, admin, and middleware helpers
+│   └── supabase/             # Client, server, and Edge middleware helpers
 └── types/                    # TypeScript interfaces (trip, budget, weather)
 ```
 
 ## Deployment
 
-Push to GitHub and import into [Vercel](https://vercel.com). Add all environment variables in Vercel → Project Settings → Environment Variables. No other config needed.
+Push to GitHub and import into [Vercel](https://vercel.com). Add all environment variables in Vercel → Project Settings → Environment Variables. No other config needed — Vercel auto-deploys on every push to `main`.
 
 ## License
 
