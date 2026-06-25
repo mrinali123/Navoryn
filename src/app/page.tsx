@@ -70,7 +70,7 @@ const STEPS = [
   {
     num: "02",
     title: "Get your perfect plan",
-    desc:  "A complete day-by-day itinerary with smart routing, weather context, and local insight.",
+    desc:  "An AI-generated, constraint-validated itinerary — structured by day, verified for real-world timing, and enriched with weather context.",
     img:   "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=90",
     accentRgb: "240,180,41",
     accent:    "#F0B429",
@@ -79,7 +79,7 @@ const STEPS = [
   {
     num: "03",
     title: "Travel with confidence",
-    desc:  "Maps, offline PDF, budget tracker, and a personal concierge in your pocket.",
+    desc:  "Real-world route-based maps, PDF export, budget tracker, and a trip-aware AI assistant.",
     img:   "https://images.unsplash.com/photo-1488085061387-422e29b40080?w=600&q=90",
     accentRgb: "16,185,129",
     accent:    "#10B981",
@@ -432,7 +432,7 @@ export default async function LandingPage() {
                     See your whole trip at a glance.
                   </h3>
                   <p style={{ fontSize: 15, color: "rgba(255,255,255,0.45)", lineHeight: 1.65 }}>
-                    Every stop, route, and distance — visualised beautifully on an interactive map.
+                    Every stop connected by real-road routing via OSRM, rendered on an interactive map.
                   </p>
                 </div>
               </div>
@@ -463,7 +463,7 @@ export default async function LandingPage() {
                       Weather-smart scheduling.
                     </h3>
                     <p style={{ fontSize: 14, color: "rgba(255,255,255,0.42)", lineHeight: 1.6, margin: 0 }}>
-                      Outdoor sights planned for sunshine. Indoor days on rainy ones.
+                      Per-day weather forecasts surfaced alongside your itinerary so you can plan around conditions in advance.
                     </p>
                   </div>
                 </div>
