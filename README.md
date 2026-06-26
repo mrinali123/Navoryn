@@ -9,7 +9,7 @@ Built with Next.js 14, Groq, Supabase, and a custom post-AI validation layer —
 
 Transforms LLM-generated travel plans into production-safe, constraint-validated itineraries with real-world feasibility guarantees.
 
-**[Live Demo →](https://navoryn.vercel.app)** · 🎥 **[Watch Demo Video](#)** ← _replace `#` with Loom / YouTube link_
+**[Live Demo →](https://navoryn-pied.vercel.app/)** · 🎥 **[Watch Demo Video](#)** ← _replace `#` with Loom / YouTube link_
 
 ---
 
