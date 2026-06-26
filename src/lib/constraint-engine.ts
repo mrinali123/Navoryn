@@ -17,7 +17,7 @@
 import type { GeneratedItinerary, Meal } from "@/types/trip";
 import type { TripFormData } from "@/types/trip";
 import { validateAndRepairItinerary } from "@/lib/itinerary-validator";
-import { parseTime } from "@/lib/itinerary-scheduler";
+import { parseTime, computeDay1Start, computeLastDayEnd } from "@/lib/itinerary-scheduler";
 
 type MealType = "breakfast" | "lunch" | "dinner";
 
@@ -164,22 +164,62 @@ function ensureMealsComplete(
 
 // ---------------------------------------------------------------------------
 // Rule 4 — Structural integrity: no day may have 0 places after repair
+//
+// Exceptions (legitimate empty days — should NOT trigger regeneration):
+//   • Day 1 when day1Floor ≥ 21:00 — the traveller arrives after 9 PM,
+//     there is genuinely no time for activities.
+//   • Last day when lastDayCeil ≤ 8:00 — the traveller departs before 8 AM,
+//     there is genuinely no time for activities.
+//   • Single-day trip where day1Floor ≥ lastDayCeil — the activity window is
+//     inverted (e.g., arrive 2 PM, depart 1 PM same day → impossible window).
 // ---------------------------------------------------------------------------
+
+// Minutes-since-midnight thresholds for "travel day" detection
+const LATE_ARRIVAL_FLOOR    = 21 * 60; // 9 PM
+const EARLY_DEPARTURE_CEIL  =  8 * 60; // 8 AM
 
 function checkStructuralIntegrity(
   itinerary: GeneratedItinerary,
+  data: TripFormData,
   violations: ConstraintViolation[]
 ): boolean {
+  const numDays     = itinerary.days.length;
+  const day1Floor   = computeDay1Start(data);
+  const lastDayCeil = computeLastDayEnd(data);
+
   let needsReview = false;
+
   for (const day of itinerary.days) {
     if (!day.places || day.places.length === 0) {
-      violations.push({
-        rule: "minimum-places",
-        day: day.day_number,
-        detail: `Day ${day.day_number} has 0 scheduled places and cannot be auto-repaired`,
-        autoFixed: false,
-      });
-      needsReview = true;
+      const isDay1    = day.day_number === 1;
+      const isLastDay = day.day_number === numDays;
+
+      const isLateArrival     = isDay1    && day1Floor   >= LATE_ARRIVAL_FLOOR;
+      const isEarlyDeparture  = isLastDay && lastDayCeil <= EARLY_DEPARTURE_CEIL;
+      const isInvertedWindow  = isDay1    && isLastDay   && day1Floor >= lastDayCeil;
+
+      if (isLateArrival || isEarlyDeparture || isInvertedWindow) {
+        // Legitimate empty day — log as auto-resolved, do not block generation.
+        const reason = isInvertedWindow
+          ? `inverted activity window (floor ${day1Floor} ≥ ceil ${lastDayCeil})`
+          : isLateArrival
+          ? `late arrival (day 1 starts at ${day1Floor} min, ≥ threshold ${LATE_ARRIVAL_FLOOR})`
+          : `early departure (last day ends at ${lastDayCeil} min, ≤ threshold ${EARLY_DEPARTURE_CEIL})`;
+        violations.push({
+          rule:      "minimum-places",
+          day:       day.day_number,
+          detail:    `Day ${day.day_number} has 0 places — accepted as travel day (${reason})`,
+          autoFixed: true,
+        });
+      } else {
+        violations.push({
+          rule:      "minimum-places",
+          day:       day.day_number,
+          detail:    `Day ${day.day_number} has 0 scheduled places and cannot be auto-repaired`,
+          autoFixed: false,
+        });
+        needsReview = true;
+      }
     }
   }
   return needsReview;
@@ -286,8 +326,8 @@ export function runConstraintEngine(
   // Rule 3: inject missing meals
   working = ensureMealsComplete(working, violations, fixLog);
 
-  // Rule 4: flag empty days (unfixable — triggers regeneration in the route)
-  const needsReview = checkStructuralIntegrity(working, violations);
+  // Rule 4: flag empty days (triggers regeneration unless they are travel-day edges)
+  const needsReview = checkStructuralIntegrity(working, data, violations);
 
   const unfixedViolations = violations.filter((v) => !v.autoFixed);
 

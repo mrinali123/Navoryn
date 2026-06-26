@@ -14,10 +14,11 @@ import { estimateTokens } from "@/lib/prompts/itinerary";
 // ---------------------------------------------------------------------------
 
 const GROQ_MODEL   = "llama-3.1-8b-instant";
-// llama-3.1-8b-instant free tier: 6,000 TPM (tokens per request = input + max_tokens).
-// Optimised prompt: ~600 tokens input. Max output for 7-day packed trip (no meals/weather): ~2,200 tokens.
-// 600 + 3000 = 3,600 — comfortable margin below 6,000.
-const MAX_TOKENS   = 3000;
+// llama-3.1-8b-instant free tier: 6,000 TPM (tokens per minute).
+// Optimised prompt: ~600 tokens input. Max output for 7-day packed trip: ~3,200 tokens.
+// 600 + 4500 = 5,100 — safely under the 5,500 TOKEN_GUARD and the 6,000 TPM limit.
+// (Previous value of 3,000 caused truncation on 7-day packed trips, leaving empty days.)
+const MAX_TOKENS   = 4500;
 const TEMPERATURE  = 0.4;  // lower = more deterministic JSON output
 const MAX_ATTEMPTS = 2;    // retry once on parse failure before surfacing error
 // Hard ceiling: abort if estimated request size approaches the TPM limit
@@ -326,7 +327,10 @@ async function generateItinerary(
   let jsonStr = stripGroqJson(fullText);
   if (!jsonStr) jsonStr = robustRepairJson(fullText);
   if (!jsonStr) {
-    log.warn({ attempt, raw: fullText.slice(0, 300), event: "ai.bad_json" }, "could not extract JSON");
+    log.warn(
+      { attempt, chars: fullText.length, raw: fullText.slice(0, 2000), event: "ai.bad_json" },
+      "could not extract JSON from model response"
+    );
     throw new Error("The AI returned an unreadable format. Retrying…");
   }
 
@@ -381,6 +385,34 @@ export const POST = withLogger("itinerary.generate", async (request: NextRequest
   if (!formData.destination || !formData.arrivalDate || !formData.departureDate) {
     return NextResponse.json({ error: "Missing required trip fields." }, { status: 400 });
   }
+
+  // Deep validation — the frontend validates too, but defend the AI pipeline
+  // against any client-side bypass or future callers.
+  const tripDays = Math.round(
+    (new Date(formData.departureDate).getTime() - new Date(formData.arrivalDate).getTime()) / 86_400_000
+  ) + 1;
+
+  if (tripDays < 1) {
+    log.warn({ userId: user.id, event: "validation.bad_dates" }, "departure before arrival");
+    return NextResponse.json({ error: "Departure date must be on or after arrival date." }, { status: 400 });
+  }
+  if (!formData.hotelName?.trim()) {
+    log.warn({ userId: user.id, event: "validation.missing_hotel" }, "hotel name missing");
+    return NextResponse.json({ error: "Hotel name is required." }, { status: 400 });
+  }
+  if (!formData.numTravelers || formData.numTravelers < 1) {
+    log.warn({ userId: user.id, event: "validation.bad_travelers" }, "invalid traveler count");
+    return NextResponse.json({ error: "At least 1 traveler is required." }, { status: 400 });
+  }
+  if (!Array.isArray(formData.interests) || formData.interests.length === 0) {
+    log.warn({ userId: user.id, event: "validation.no_interests" }, "no interests selected");
+    return NextResponse.json({ error: "Please select at least one interest." }, { status: 400 });
+  }
+
+  log.info(
+    { userId: user.id, tripDays, numTravelers: formData.numTravelers, interests: formData.interests.length, event: "validation.passed" },
+    "input validation passed"
+  );
 
   log.info(
     { userId: user.id, destination: formData.destination, event: "itinerary.start" },
@@ -473,10 +505,15 @@ export const POST = withLogger("itinerary.generate", async (request: NextRequest
           log.info({ event: "constraint.passed" }, "itinerary passed all constraint checks");
         }
 
-        // If any day has 0 places the itinerary is structurally broken — try once more
+        // If any day has 0 places the itinerary is structurally broken — try once more.
+        // Note: late-arrival day 1 and early-departure last day legitimately have 0
+        // places and are NOT flagged by needsReview after the constraint engine fix.
         if (constraintResult.needsReview) {
+          const emptyDays = constraintResult.violations
+            .filter((v) => v.rule === "minimum-places" && !v.autoFixed)
+            .map((v) => v.day);
           log.warn(
-            { event: "constraint.regenerating" },
+            { emptyDays, event: "constraint.regenerating" },
             "constraint engine flagged empty days — regenerating once"
           );
           send({ type: "status", message: "Refining your itinerary...", progress: 85 });
