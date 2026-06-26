@@ -94,16 +94,18 @@ export default function TripMap({ trip, activeDayIndex }: TripMapProps) {
       }).setView([20, 0], 2);
 
       L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
           attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: "abcd",
-          maxZoom: 20,
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
         }
       ).addTo(map);
 
       mapRef.current = map;
+      // Trigger a size recalculation after the step-enter CSS animation (300 ms)
+      // so Leaflet knows the correct container dimensions and loads the right tiles.
+      setTimeout(() => { if (mapRef.current) mapRef.current.invalidateSize(true); }, 350);
       renderMap(L, map, false);
     });
 
