@@ -94,11 +94,12 @@ export default function TripMap({ trip, activeDayIndex }: TripMapProps) {
       }).setView([20, 0], 2);
 
       L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
         {
           attribution:
-            'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012',
-          maxZoom: 19,
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: "abcd",
+          maxZoom: 20,
         }
       ).addTo(map);
 
@@ -189,7 +190,8 @@ export default function TripMap({ trip, activeDayIndex }: TripMapProps) {
           iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -18],
         });
         const m = L.marker(hotel, { icon })
-          .bindPopup(hotelPopup(trip.hotel_name, trip.hotel_address ?? ""));
+          .bindPopup(hotelPopup(trip.hotel_name, trip.hotel_address ?? ""))
+          .bindTooltip(trip.hotel_name, { direction: "top", offset: [0, -20] });
         m.addTo(map);
         layersRef.current.push(m);
       }
@@ -210,7 +212,8 @@ export default function TripMap({ trip, activeDayIndex }: TripMapProps) {
         });
 
         const m = L.marker(coords, { icon })
-          .bindPopup(placePopup(place.name, place.best_time, place.duration_minutes, place.description ?? ""));
+          .bindPopup(placePopup(place.name, place.best_time, place.duration_minutes, place.description ?? ""))
+          .bindTooltip(place.name, { direction: "top", offset: [0, -18] });
         m.addTo(map);
         layersRef.current.push(m);
       });

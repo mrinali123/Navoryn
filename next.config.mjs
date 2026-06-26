@@ -14,8 +14,8 @@ const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  // ArcGIS/Esri tiles used by Leaflet; unpkg.com for Leaflet default marker icons
-  "img-src 'self' data: blob: https://images.unsplash.com https://server.arcgisonline.com https://unpkg.com",
+  // CartoDB Voyager tiles used by Leaflet; unpkg.com for Leaflet default marker icons
+  "img-src 'self' data: blob: https://images.unsplash.com https://*.basemaps.cartocdn.com https://unpkg.com",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.open-meteo.com https://nominatim.openstreetmap.org https://photon.komoot.io https://router.project-osrm.org",
   "font-src 'self'",
   "frame-src 'none'",
