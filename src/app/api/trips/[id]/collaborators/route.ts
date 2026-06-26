@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
 import nodemailer from "nodemailer";
 import { withLogger, getLog } from "@/lib/with-logger";
-import { getBaseUrl } from "@/lib/url";
 import { escHtml } from "@/lib/html-escape";
 
 const VALID_ROLES = ["viewer", "editor"] as const;
@@ -84,7 +83,8 @@ export const POST = withLogger(
       return NextResponse.json({ error: "Failed to create invitation" }, { status: 500 });
     }
 
-    const inviteUrl = `${getBaseUrl()}/invite/${invite_token}`;
+    const origin = new URL(request.url).origin;
+    const inviteUrl = `${origin}/invite/${invite_token}`;
 
     let emailSent = false;
 
