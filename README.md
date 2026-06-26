@@ -5,7 +5,7 @@
 **Most AI travel tools generate an itinerary and call it done.**  
 **Navoryn generates one, then runs it through a deterministic constraint engine that checks scheduling conflicts, missing meals, and physical feasibility before anything reaches the database.**
 
-Built with Next.js 14, Groq, Supabase, and a custom post-AI validation layer — this is a full-stack engineering project, not a GPT wrapper.
+Built with Next.js 14, Groq, Supabase, and a custom post-AI validation layer — this is a full-stack engineering project that separates probabilistic AI generation from deterministic validation.
 
 Transforms LLM-generated travel plans into production-safe, constraint-validated itineraries with real-world feasibility guarantees.
 
@@ -37,7 +37,7 @@ You fill out a 3-step form — destination, hotel, dates, pace, and interests. N
 
 LLM outputs are probabilistic. A language model generating a travel itinerary might schedule a restaurant at 9 AM, place the same museum twice on the same day, or suggest a location 300 km outside the destination.
 
-Navoryn treats LLM output as untrusted input. After generation, a five-rule deterministic constraint engine intercepts every response before the database sees it:
+Navoryn treats LLM output as untrusted input. After generation, the Constraint Engine (Deterministic Validation Layer) intercepts every response before the database sees it:
 
 | Rule | What it fixes |
 |---|---|
@@ -48,7 +48,17 @@ Navoryn treats LLM output as untrusted input. After generation, a five-rule dete
 | Travel feasibility | Checks that consecutive geocoded places are physically reachable within the scheduled time gap, at a conservative 40 km/h city speed |
 | End result | Fully structured, time-consistent, geographically valid itineraries stored safely in DB |
 
-This is the project's core engineering contribution. The constraint engine is what separates it from "AI generates text, display text" — every saved itinerary is structurally valid, geographically grounded, and time-consistent.
+This is the project's core engineering contribution. The Constraint Engine (Deterministic Validation Layer) is what separates it from "AI generates text, display text" — every saved itinerary is structurally valid, geographically grounded, and time-consistent.
+
+---
+
+## Production Guarantees
+
+Every itinerary passes through the Constraint Engine (Deterministic Validation Layer) before any record reaches the database. Raw LLM output is never persisted directly.
+
+- Time, meal, structural, and travel-feasibility validation run synchronously within the generation pipeline — violations are repaired or trigger regeneration before the DB write
+- All API routes are instrumented with pino structured logging, scoped per request via `AsyncLocalStorage`, so every generation attempt, constraint violation, and geocoding failure is traceable
+- Supabase Row Level Security policies ensure users can only access their own data; collaborator access requires an explicit invite token accepted by an authenticated user
 
 ---
 
@@ -58,7 +68,7 @@ This is the project's core engineering contribution. The constraint engine is wh
 - **AI itinerary generation** — Groq-powered (`llama-3.1-8b-instant`), streams progress via SSE; respects arrival/departure times, hotel check-in/out, pace, budget, interests, dietary needs, and must-visit places
 - **AI chat assistant** — trip-scoped Groq chat with the full itinerary injected as system prompt; understands context like "what if it rains on Day 2?"
 
-### Constraint Engine
+### Constraint Engine (Deterministic Validation Layer)
 - **Post-AI validation layer** — five deterministic rules run between LLM output and DB write: deduplication, time window repair, meal injection, structural integrity check, and travel feasibility guard
 - **Auto-repair + retry** — violations are fixed automatically where possible; structurally broken days trigger one automatic regeneration attempt before surfacing an error
 
@@ -84,13 +94,13 @@ This layer ensures AI output is never directly trusted or persisted.
 
 The live demo is open — sign up free to generate itineraries (uses Groq's free tier).
 
-1. **Create a trip** — pick any destination (e.g., Paris, Kyoto, New York), set arrival and departure dates, add a hotel name, and choose your pace and interests
-2. **Watch generation** — a live SSE stream shows progress as the LLM builds your itinerary (15–30 seconds)
-3. **Explore the day view** — click through days to see timed places, restaurant picks, and weather context
-4. **Switch to Map view** — every stop is connected by OSRM real-road routing, not straight lines
-5. **Try the AI chat** — ask "what if it rains on Day 2?" or "swap the museum for a local market"
-6. **Open the Budget tracker** — add sample expenses and watch the Recharts breakdown update
-7. **Share the trip** — generate a public link and open it in an incognito tab (no sign-in required)
+1. **Create a trip** — enter a destination (e.g., Paris, Kyoto, New York), arrival and departure dates, accommodation details, and travel preferences (pace, budget, interests, dietary needs)
+2. **Watch real-time generation** — Server-Sent Events push distinct progress updates for each pipeline stage: LLM streaming, constraint validation, geocoding, and DB write (15–30 seconds total)
+3. **Review the structured itinerary** — navigate day by day to see timed activities, meal recommendations, weather context, and daily travel notes
+4. **Switch to Map view** — numbered place markers are connected by OSRM real-road routing between stops, not straight-line estimates
+5. **Use the AI chat assistant** — ask questions like "what if it rains on Day 2?" or "suggest alternatives to the museum"; the full itinerary is injected as system context
+6. **Track spending** — log expenses by category and view a live breakdown in Recharts
+7. **Share the itinerary** — generate a public read-only link; no sign-in required for viewers
 
 ---
 
@@ -130,7 +140,7 @@ flowchart TD
 
 ## Key Engineering Highlights
 
-**Constraint Engine** (`src/lib/constraint-engine.ts`)
+**Constraint Engine (Deterministic Validation Layer)** (`src/lib/constraint-engine.ts`)
 A rule-based validation layer that runs between LLM output and the database write. It applies five deterministic rules in sequence: deduplicate places within the same day, repair time window violations per place type (delegating to `itinerary-validator.ts`), inject missing meal types (breakfast/lunch/dinner) with fallback entries, and flag any day with zero remaining places as `needsReview`. When `needsReview` is true, the generation route triggers one automatic regeneration attempt before surfacing an error to the client. A fifth rule runs after geocoding: consecutive places are checked against a 40 km/h city travel speed to detect physically infeasible transitions and log them as structured warnings.
 
 **SSE Streaming Pipeline** (`src/app/api/itinerary/generate/route.ts`)
@@ -149,6 +159,8 @@ Multi-user access is implemented with Supabase Row Level Security. Two `SECURITY
 Every API route is wrapped in a `withLogger` higher-order function that creates a pino child logger per request and stores it in `AsyncLocalStorage`. Any function in the call stack can call `getLog()` to retrieve the logger with the request ID already attached — without passing it as a parameter. Edge middleware uses a manually structured JSON schema that matches pino's output format.
 
 ---
+
+> Navoryn deliberately separates probabilistic AI generation from deterministic validation. LLMs generate candidate itineraries, while a rule-based validation layer ensures only structurally valid, geographically grounded, and time-consistent itineraries are persisted.
 
 ## How It Works
 
@@ -317,6 +329,12 @@ src/
 - **Geocoding coverage varies** — Photon and Nominatim are free OSM-based services. Niche destinations or recently added places may fail to geocode and will appear without map pins.
 - **AI may need regeneration** — for long trips (7+ days, packed pace), the Groq free-tier token limit can trigger a retry that adds ~15 seconds to generation time.
 - **Map tile dependency** — map labels are served by Esri World Street Map tiles; tile availability and update cadence depend on the Esri tile service, which is outside the app's control.
+
+### Failure Modes
+
+- **LLM quality degradation** — heavily constrained prompts (many must-visit places, tight schedules, strict dietary requirements) may produce itineraries that require multiple regeneration attempts or surface as errors to the user.
+- **Geocoding rate limits** — Photon and Nominatim are unauthenticated free-tier services. Sustained request volume or upstream load may cause delayed or failed geocoding, resulting in places without map coordinates.
+- **External service availability** — OSRM road routing and Esri map tiles are third-party dependencies. Temporary outages will degrade map display without affecting stored itinerary data.
 
 ---
 
