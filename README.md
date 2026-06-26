@@ -215,7 +215,7 @@ Every API route is wrapped in a `withLogger` higher-order function that creates 
 | Styling | Tailwind CSS + inline style objects |
 | Auth & Database | Supabase (PostgreSQL + Row Level Security) |
 | AI | Groq API (`llama-3.1-8b-instant`) |
-| Maps | Leaflet + react-leaflet + OSRM road routing |
+| Maps | Leaflet (dynamic import) + OSRM road routing |
 | Geocoding | Photon (Komoot) + Nominatim (OpenStreetMap) |
 | Weather | Open-Meteo (no API key, 1-hour Supabase cache) |
 | Charts | Recharts |
