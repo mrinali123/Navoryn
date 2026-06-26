@@ -28,16 +28,17 @@ export const GET = withLogger(
     }
 
     try {
-      // Check cache
-      const cached = cache.get(id);
-      if (cached && Date.now() < cached.expires) {
-        log.debug({ tripId: id, event: "pdf.cache_hit" }, "returning cached PDF");
-        return pdfResponse(cached.buf, id);
-      }
-
+      // Verify access BEFORE serving from cache — prevents cross-user IDOR
+      // where a warm function instance could serve another user's cached PDF.
       const trip = await getTripWithDays(id, user.id);
       if (!trip) {
         return NextResponse.json({ error: "Trip not found" }, { status: 404 });
+      }
+
+      const cached = cache.get(id);
+      if (cached && Date.now() < cached.expires) {
+        log.debug({ tripId: id, event: "pdf.cache_hit" }, "returning cached PDF");
+        return pdfResponse(cached.buf, id, trip);
       }
 
       const renderStart = performance.now();

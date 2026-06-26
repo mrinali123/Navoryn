@@ -6,6 +6,7 @@ import { withLogger, getLog } from "@/lib/with-logger";
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 
 const MAX_DAILY = 20;
+const MAX_MESSAGE_LEN = 4_000;
 
 const SYSTEM_PROMPT = `You are Navoryn AI, a friendly expert travel assistant. Help users plan trips, discover destinations, pack smarter, and travel better.
 
@@ -60,6 +61,13 @@ export const POST = withLogger("chat", async (request: NextRequest) => {
 
     if (!message?.trim()) {
       return NextResponse.json({ error: "Empty message" }, { status: 400 });
+    }
+
+    if (message.length > MAX_MESSAGE_LEN) {
+      return NextResponse.json(
+        { error: `Message must be ${MAX_MESSAGE_LEN} characters or fewer` },
+        { status: 400 }
+      );
     }
 
     const messages: Groq.Chat.ChatCompletionMessageParam[] = [
@@ -133,9 +141,6 @@ export const POST = withLogger("chat", async (request: NextRequest) => {
     });
   } catch (error) {
     log.error({ err: error, event: "request.error" }, "chat request failed");
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 });

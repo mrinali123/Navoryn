@@ -4,6 +4,10 @@ import { Resend } from "resend";
 import nodemailer from "nodemailer";
 import { withLogger, getLog } from "@/lib/with-logger";
 import { getBaseUrl } from "@/lib/url";
+import { escHtml } from "@/lib/html-escape";
+
+const VALID_ROLES = ["viewer", "editor"] as const;
+type CollaboratorRole = (typeof VALID_ROLES)[number];
 
 function generateInviteToken(): string {
   const bytes = new Uint8Array(12);
@@ -55,8 +59,17 @@ export const POST = withLogger(
 
     if (!trip) return NextResponse.json({ error: "Trip not found or not owner" }, { status: 403 });
 
-    const { email, role = "viewer" } = await request.json();
+    const body = await request.json();
+    const { email, role = "viewer" } = body;
+
     if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
+
+    if (!VALID_ROLES.includes(role as CollaboratorRole)) {
+      return NextResponse.json(
+        { error: `Invalid role. Must be one of: ${VALID_ROLES.join(", ")}` },
+        { status: 400 }
+      );
+    }
 
     const invite_token = generateInviteToken();
 
@@ -68,7 +81,7 @@ export const POST = withLogger(
     });
     if (insertError) {
       log.error({ err: insertError, tripId: id, event: "db.error" }, "failed to insert invite");
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
+      return NextResponse.json({ error: "Failed to create invitation" }, { status: 500 });
     }
 
     const inviteUrl = `${getBaseUrl()}/invite/${invite_token}`;
@@ -81,6 +94,11 @@ export const POST = withLogger(
       .eq("id", user.id)
       .single<{ full_name: string }>();
     const inviterName = profile?.full_name ?? user.email ?? "Someone";
+
+    // Escape user-supplied strings before interpolating into HTML
+    const safeInviterName = escHtml(inviterName);
+    const safeTripTitle  = escHtml(trip.trip_title);
+    const safeDestination = escHtml(trip.destination);
 
     const emailHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -95,12 +113,12 @@ export const POST = withLogger(
         <tr><td style="padding:32px">
           <h1 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a">You have a trip invite</h1>
           <p style="margin:0 0 24px;font-size:15px;color:#334155;line-height:1.6">
-            <strong>${inviterName}</strong> has invited you to collaborate on their trip:
+            <strong>${safeInviterName}</strong> has invited you to collaborate on their trip:
           </p>
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;border-radius:8px;margin-bottom:28px">
             <tr><td style="padding:16px 20px">
-              <p style="margin:0;font-size:17px;font-weight:700;color:#0f172a">${trip.trip_title}</p>
-              <p style="margin:6px 0 0;font-size:14px;color:#64748b">${trip.destination}</p>
+              <p style="margin:0;font-size:17px;font-weight:700;color:#0f172a">${safeTripTitle}</p>
+              <p style="margin:6px 0 0;font-size:14px;color:#64748b">${safeDestination}</p>
             </td></tr>
           </table>
           <a href="${inviteUrl}" style="display:inline-block;background:#0ea5e9;color:#ffffff;padding:13px 28px;border-radius:8px;text-decoration:none;font-size:15px;font-weight:600">
@@ -161,7 +179,8 @@ export const POST = withLogger(
       }
     }
 
-    return NextResponse.json({ ok: true, invite_token, invite_url: inviteUrl, email_sent: emailSent });
+    // Return invite_url (contains the token); do not expose the raw token separately
+    return NextResponse.json({ ok: true, invite_url: inviteUrl, email_sent: emailSent });
   }
 );
 

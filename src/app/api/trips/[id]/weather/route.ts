@@ -16,6 +16,14 @@ export const GET = withLogger(
     const { id } = await params;
     const supabase = await createClient();
 
+    // Require authentication to prevent unauthenticated callers from triggering
+    // external geocoding and weather API calls against arbitrary trip IDs.
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      log.warn({ event: "auth.unauthorized" }, "unauthorized weather request");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { data: trip } = await supabase
       .from("trips")
       .select("destination, weather_cache, weather_cache_updated_at, user_id, is_public")

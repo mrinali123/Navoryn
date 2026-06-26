@@ -55,7 +55,7 @@ export default function InviteModal({ tripId, onClose }: InviteModalProps) {
 
       setInviteResult({
         email: trimmed,
-        url: `${window.location.origin}/invite/${json.invite_token}`,
+        url: json.invite_url,
         emailSent: json.email_sent ?? false,
       });
       setEmail("");

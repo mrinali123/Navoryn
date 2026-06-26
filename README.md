@@ -76,7 +76,7 @@ This layer ensures AI output is never directly trusted or persisted.
 
 ### Geospatial Layer
 - **Interactive map** — Leaflet map with numbered pins per place; real-road routing between stops via OSRM (not straight lines)
-- **Geocoding** — Photon (Komoot) primary with Nominatim fallback; Haversine guard rejects coordinates more than 150 km from the city center
+- **Geocoding** — Nominatim (OpenStreetMap) for city-center coordinates (once, for the Haversine bounding box); Photon (Komoot) for each individual place; Haversine guard rejects coordinates more than 150 km from the city center
 - **Weather overlay** — per-day forecast from Open-Meteo with 1-hour Supabase cache
 
 ### Data & Infrastructure
@@ -147,7 +147,7 @@ A rule-based validation layer that runs between LLM output and the database writ
 Itinerary generation uses a `ReadableStream` to push Server-Sent Events to the client throughout the 15–30 second Groq LLM call. The pipeline stages — token streaming, JSON extraction, constraint validation, geocoding, DB write — emit distinct progress events so the UI reflects actual server state rather than a fake timer. Retry logic handles JSON parse failures (up to 2 attempts) and a pre-flight token guard prevents 413 errors before the Groq call is even made.
 
 **Geospatial Pipeline** (`src/app/api/itinerary/generate/route.ts`)
-After generation, every place is geocoded via Photon (Komoot) with a Nominatim city-center fallback. A Haversine distance guard rejects any coordinate more than 150 km from the destination city center, preventing the model from hallucinating places in another country. The geocoding step runs concurrently across all places using `Promise.allSettled`.
+After generation, the destination city center is geocoded once via Nominatim (for the Haversine bounding box), then every individual place is geocoded via Photon (Komoot). A Haversine distance guard rejects any coordinate more than 150 km from the destination city center, preventing the model from hallucinating places in another country. The geocoding step runs concurrently across all places using `Promise.allSettled`.
 
 **Hybrid Offline Cache** (`src/lib/offline-cache.ts`, `src/hooks/useOfflineTrips.ts`)
 Trips are stored in both localStorage (15-trip LRU eviction, fast synchronous access) and IndexedDB (via `idb`, larger quota, structured storage) every time a trip view loads. The PWA service worker (`@ducanh2912/next-pwa`) intercepts navigation requests and serves the `/offline` fallback page when the network is unreachable.
@@ -223,7 +223,7 @@ Every API route is wrapped in a `withLogger` higher-order function that creates 
 | Email | Nodemailer (Gmail SMTP) + Resend (fallback) |
 | Logging | pino + AsyncLocalStorage per-request context |
 | Offline | @ducanh2912/next-pwa + localStorage + IndexedDB (idb) |
-| Testing | Vitest + Testing Library |
+| Testing | Vitest (jsdom environment) |
 | Deployment | Vercel |
 
 ---

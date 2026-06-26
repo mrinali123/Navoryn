@@ -71,9 +71,11 @@ CREATE INDEX IF NOT EXISTS itinerary_days_trip_id_idx ON public.itinerary_days(t
 CREATE INDEX IF NOT EXISTS itinerary_days_order_idx   ON public.itinerary_days(trip_id, day_number);
 
 -- ── trip_chats ────────────────────────────────────────────────────────────────
+-- trip_id is nullable: general/dashboard chat messages have trip_id = NULL;
+-- trip-scoped chat messages have a non-null trip_id.
 CREATE TABLE IF NOT EXISTS public.trip_chats (
   id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  trip_id    UUID        NOT NULL REFERENCES public.trips(id)  ON DELETE CASCADE,
+  trip_id    UUID        REFERENCES public.trips(id)  ON DELETE CASCADE,
   user_id    UUID        NOT NULL REFERENCES auth.users(id)    ON DELETE CASCADE,
   role       TEXT        NOT NULL CHECK (role IN ('user', 'assistant')),
   content    TEXT        NOT NULL,
@@ -82,6 +84,11 @@ CREATE TABLE IF NOT EXISTS public.trip_chats (
 
 CREATE INDEX IF NOT EXISTS trip_chats_trip_user_idx
   ON public.trip_chats(trip_id, user_id, created_at DESC);
+
+-- Partial index for efficient general-chat rate-limit count queries
+CREATE INDEX IF NOT EXISTS trip_chats_general_idx
+  ON public.trip_chats(user_id, created_at DESC)
+  WHERE trip_id IS NULL;
 
 -- ── trip_expenses ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.trip_expenses (
@@ -229,6 +236,12 @@ CREATE POLICY "collabs_insert_owner" ON public.trip_collaborators
 -- Only the trip owner can remove collaborators
 CREATE POLICY "collabs_delete_owner" ON public.trip_collaborators
   FOR DELETE USING (public.rls_is_trip_owner(trip_id));
+
+-- An invitee can accept their own pending invitation by setting user_id + accepted_at
+CREATE POLICY "collabs_invite_accept" ON public.trip_collaborators
+  FOR UPDATE
+  USING  (invite_token IS NOT NULL AND accepted_at IS NULL)
+  WITH CHECK (user_id = auth.uid() AND accepted_at IS NOT NULL);
 
 -- =============================================================================
 -- 5. FUNCTIONS AND TRIGGERS

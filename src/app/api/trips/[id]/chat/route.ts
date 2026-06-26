@@ -8,6 +8,7 @@ import { withLogger, getLog } from "@/lib/with-logger";
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 
 const MAX_DAILY = 30;
+const MAX_MESSAGE_LEN = 4_000;
 
 export const POST = withLogger(
   "trips.chat",
@@ -30,6 +31,9 @@ export const POST = withLogger(
         message,
         history = [],
         currentDay,
+        // `silent` suppresses message persistence (background conflict checks),
+        // but the rate limit is ALWAYS enforced regardless of this flag so that
+        // clients cannot bypass the daily cap by flipping silent=true.
         silent = false,
       }: {
         message: string;
@@ -42,19 +46,24 @@ export const POST = withLogger(
         return NextResponse.json({ error: "Empty message" }, { status: 400 });
       }
 
-      // Rate limit (skip for silent conflict checks)
-      if (!silent) {
-        const count = await getDailyMessageCount(id, user.id);
-        if (count >= MAX_DAILY) {
-          log.warn(
-            { userId: user.id, tripId: id, dailyCount: count, limit: MAX_DAILY, event: "rate_limit" },
-            "trip chat rate limit hit"
-          );
-          return NextResponse.json(
-            { error: `You've reached today's limit of ${MAX_DAILY} messages. Resets at midnight.` },
-            { status: 429 }
-          );
-        }
+      if (message.length > MAX_MESSAGE_LEN) {
+        return NextResponse.json(
+          { error: `Message must be ${MAX_MESSAGE_LEN} characters or fewer` },
+          { status: 400 }
+        );
+      }
+
+      // Rate limit is always checked — silent flag does NOT bypass it
+      const count = await getDailyMessageCount(id, user.id);
+      if (count >= MAX_DAILY) {
+        log.warn(
+          { userId: user.id, tripId: id, dailyCount: count, limit: MAX_DAILY, event: "rate_limit" },
+          "trip chat rate limit hit"
+        );
+        return NextResponse.json(
+          { error: `You've reached today's limit of ${MAX_DAILY} messages. Resets at midnight.` },
+          { status: 429 }
+        );
       }
 
       const trip = await getTripWithDays(id, user.id);
@@ -76,7 +85,8 @@ export const POST = withLogger(
         { role: "user", content: message },
       ];
 
-      // Save user message before streaming (skip for silent)
+      // Persist user message (skip for silent background checks to avoid
+      // polluting the chat history shown to the user)
       if (!silent) {
         await saveChatMessage(id, user.id, "user", message);
       }
@@ -145,10 +155,7 @@ export const POST = withLogger(
       });
     } catch (error) {
       log.error({ err: error, tripId: id, event: "request.error" }, "trip chat request failed");
-      return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
   }
 );
