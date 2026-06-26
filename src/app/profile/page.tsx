@@ -6,8 +6,8 @@ import ProfileForm from "@/components/profile/ProfileForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Profile — Roamly",
-  description: "Manage your Roamly profile and travel preferences.",
+  title: "Profile — Navoryn",
+  description: "Manage your Navoryn profile and travel preferences.",
 };
 
 function daysBetween(a: string, b: string) {

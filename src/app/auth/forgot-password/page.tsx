@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 no-underline">
             <span className="text-2xl">✈️</span>
-            <span className="gradient-text text-2xl font-bold" style={{ letterSpacing: "-0.02em" }}>Roamly</span>
+            <span className="gradient-text text-2xl font-bold" style={{ letterSpacing: "-0.02em" }}>Navoryn</span>
           </Link>
         </div>
 

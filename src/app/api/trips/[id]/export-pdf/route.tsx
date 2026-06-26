@@ -67,7 +67,7 @@ function pdfResponse(buf: Buffer, tripId: string, trip?: TripWithDays) {
     ? trip.destination.toLowerCase().replace(/\s+/g, "-")
     : tripId;
   const date = trip ? trip.arrival_date : "";
-  const filename = `roamly-${dest}-${date}.pdf`.replace(/[^a-z0-9.\-]/gi, "-");
+  const filename = `navoryn-${dest}-${date}.pdf`.replace(/[^a-z0-9.\-]/gi, "-");
 
   return new NextResponse(new Uint8Array(buf), {
     headers: {

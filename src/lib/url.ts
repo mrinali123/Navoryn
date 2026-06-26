@@ -1,4 +1,4 @@
-const PRODUCTION_URL = "https://roamly-ten.vercel.app";
+const PRODUCTION_URL = "https://navoryn.vercel.app";
 
 /**
  * Returns the app base URL for the current environment.

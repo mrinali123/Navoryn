@@ -7,9 +7,9 @@ import AnimatedSection from "@/components/ui/AnimatedSection";
 import { ArrowRight, MapPin, Compass, Navigation } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Roamly — The world, perfectly planned.",
+  title: "Navoryn — The world, perfectly planned.",
   description:
-    "Roamly turns your travel vision into a precise, beautiful day-by-day itinerary. Interactive maps, weather intelligence, and real-time collaboration.",
+    "Navoryn turns your travel vision into a precise, beautiful day-by-day itinerary. Interactive maps, weather intelligence, and real-time collaboration.",
 };
 
 const BG = "#060914";
@@ -93,7 +93,7 @@ const STATS = [
   { num: "Offline", label: "Offline access to saved itineraries" },
 ];
 
-function RoamlyLogo() {
+function NavorynLogo() {
   return (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
       <rect width="28" height="28" rx="7" fill="#060914"/>
@@ -533,8 +533,8 @@ export default async function LandingPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ marginBottom: 56 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
-              <RoamlyLogo />
-              <span style={{ fontFamily: FONT_DISPLAY, fontSize: 20, fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>Roamly</span>
+              <NavorynLogo />
+              <span style={{ fontFamily: FONT_DISPLAY, fontSize: 20, fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>Navoryn</span>
             </div>
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.3)", lineHeight: 1.75, maxWidth: 300 }}>
               Precision travel planning for curious minds and bold explorers.
@@ -543,7 +543,7 @@ export default async function LandingPage() {
 
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: 28, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>
-              &copy; {new Date().getFullYear()} Roamly Inc. All rights reserved.
+              &copy; {new Date().getFullYear()} Navoryn Inc. All rights reserved.
             </p>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>
               Crafted with precision &nbsp;·&nbsp; Built in India

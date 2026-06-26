@@ -15,7 +15,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    const saved = (localStorage.getItem("roamly-theme") as Theme) || "dark";
+    const saved = (localStorage.getItem("navoryn-theme") as Theme) || "dark";
     setTheme(saved);
     document.documentElement.setAttribute("data-theme", saved);
   }, []);
@@ -23,7 +23,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   function toggle() {
     const next: Theme = theme === "dark" ? "light" : "dark";
     setTheme(next);
-    localStorage.setItem("roamly-theme", next);
+    localStorage.setItem("navoryn-theme", next);
     document.documentElement.setAttribute("data-theme", next);
   }
 

@@ -90,7 +90,7 @@ export const POST = withLogger(
     <tr><td align="center">
       <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden">
         <tr><td style="background:#0f172a;padding:24px 32px">
-          <p style="margin:0;color:#38bdf8;font-size:20px;font-weight:700;letter-spacing:-0.5px">Roamly</p>
+          <p style="margin:0;color:#38bdf8;font-size:20px;font-weight:700;letter-spacing:-0.5px">Navoryn</p>
         </td></tr>
         <tr><td style="padding:32px">
           <h1 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a">You have a trip invite</h1>
@@ -111,7 +111,7 @@ export const POST = withLogger(
           </p>
         </td></tr>
         <tr><td style="padding:16px 32px;border-top:1px solid #f1f5f9">
-          <p style="margin:0;font-size:12px;color:#94a3b8">Roamly — AI travel planner</p>
+          <p style="margin:0;font-size:12px;color:#94a3b8">Navoryn — AI travel planner</p>
         </td></tr>
       </table>
     </td></tr>
@@ -119,8 +119,8 @@ export const POST = withLogger(
 </body>
 </html>`;
 
-    const emailText = `Hi,\n\n${inviterName} has invited you to collaborate on their trip to ${trip.destination} ("${trip.trip_title}") on Roamly.\n\nAccept your invite here:\n${inviteUrl}\n\nIf you didn't expect this email, you can ignore it.\n\nRoamly — AI travel planner`;
-    const emailSubject = `${inviterName} invited you to view a trip on Roamly`;
+    const emailText = `Hi,\n\n${inviterName} has invited you to collaborate on their trip to ${trip.destination} ("${trip.trip_title}") on Navoryn.\n\nAccept your invite here:\n${inviteUrl}\n\nIf you didn't expect this email, you can ignore it.\n\nNavoryn — AI travel planner`;
+    const emailSubject = `${inviterName} invited you to view a trip on Navoryn`;
 
     // Try Gmail SMTP first (works for any recipient, no domain needed)
     if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
@@ -130,7 +130,7 @@ export const POST = withLogger(
           auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
         });
         await transporter.sendMail({
-          from: `"Roamly" <${process.env.GMAIL_USER}>`,
+          from: `"Navoryn" <${process.env.GMAIL_USER}>`,
           to: email,
           subject: emailSubject,
           text: emailText,
@@ -147,7 +147,7 @@ export const POST = withLogger(
     if (!emailSent && process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY);
       const { data: sent, error: emailError } = await resend.emails.send({
-        from: "Roamly <onboarding@resend.dev>",
+        from: "Navoryn <onboarding@resend.dev>",
         to: email,
         subject: emailSubject,
         text: emailText,

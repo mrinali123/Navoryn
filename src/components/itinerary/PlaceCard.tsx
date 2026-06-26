@@ -174,14 +174,14 @@ export default function PlaceCard({ place, index, isLast, weatherHourly, dayDate
 
   function handleFlyTo() {
     if (!place.lat || !place.lng) return;
-    window.dispatchEvent(new CustomEvent("roamly:flyto", {
+    window.dispatchEvent(new CustomEvent("navoryn:flyto", {
       detail: { lat: place.lat, lng: place.lng, name: place.name },
     }));
     // Scroll is handled by TripView after mapOpen state updates and DOM renders
   }
 
   function handleAskAI() {
-    window.dispatchEvent(new CustomEvent("roamly:ask-ai", {
+    window.dispatchEvent(new CustomEvent("navoryn:ask-ai", {
       detail: { message: `Tell me more about ${place.name} and give me tips for visiting.` },
     }));
   }

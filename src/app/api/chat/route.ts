@@ -7,7 +7,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 
 const MAX_DAILY = 20;
 
-const SYSTEM_PROMPT = `You are Roamly AI, a friendly expert travel assistant. Help users plan trips, discover destinations, pack smarter, and travel better.
+const SYSTEM_PROMPT = `You are Navoryn AI, a friendly expert travel assistant. Help users plan trips, discover destinations, pack smarter, and travel better.
 
 BEHAVIOUR:
 - Be warm, enthusiastic, and concise
@@ -16,7 +16,7 @@ BEHAVIOUR:
 - Keep responses under 200 words unless a detailed breakdown is explicitly requested
 - Use bullet points for lists, prose for conversational replies
 - Use travel emojis occasionally to keep it friendly ✈️ 🗺️ 🍽️
-- If someone is ready to plan a specific trip, encourage them to use Roamly's trip planner`;
+- If someone is ready to plan a specific trip, encourage them to use Navoryn's trip planner`;
 
 export const POST = withLogger("chat", async (request: NextRequest) => {
   const log = getLog();

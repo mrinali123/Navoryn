@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Accept invite — Roamly" };
+export const metadata: Metadata = { title: "Accept invite — Navoryn" };
 
 interface Props {
   params: Promise<{ token: string }>;
@@ -27,7 +27,7 @@ export default async function InvitePage({ params }: Props) {
           <p className="text-5xl mb-4">🔗</p>
           <h1 className="text-xl font-bold text-white mb-2">Invalid invite link</h1>
           <p className="text-slate-400 text-sm mb-6">This invite link doesn&apos;t exist or has expired.</p>
-          <Link href="/" className="text-sky hover:underline text-sm">Go to Roamly →</Link>
+          <Link href="/" className="text-sky hover:underline text-sm">Go to Navoryn →</Link>
         </div>
       </div>
     );

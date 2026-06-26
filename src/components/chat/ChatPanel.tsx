@@ -187,7 +187,7 @@ export default function ChatPanel({
             </div>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: "white" }}>Roamly AI</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "white" }}>Navoryn AI</span>
                 <span
                   style={{
                     borderRadius: 999, padding: "2px 8px", fontSize: 10, fontWeight: 600,
@@ -255,7 +255,7 @@ export default function ChatPanel({
             }}
             className="hover:bg-amber-900/20"
           >
-            <p style={{ fontSize: 12, fontWeight: 600, color: "#F59E0B" }}>⚠️ Roamly AI spotted a potential issue</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: "#F59E0B" }}>⚠️ Navoryn AI spotted a potential issue</p>
             <p style={{ marginTop: 2, fontSize: 12, color: "rgba(245,158,11,0.7)", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{conflictWarning}</p>
             <p style={{ marginTop: 4, fontSize: 11, color: "rgba(245,158,11,0.45)" }}>Tap to ask for a fix →</p>
           </button>
@@ -368,7 +368,7 @@ export default function ChatPanel({
           </div>
 
           <p style={{ marginTop: 8, textAlign: "center", fontSize: 10, color: "rgba(255,255,255,0.2)" }}>
-            Powered by Llama 3.3 · Shift+Enter for new line
+            Powered by Llama 3.1 · Shift+Enter for new line
           </p>
         </div>
       </div>

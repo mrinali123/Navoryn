@@ -92,7 +92,7 @@ export default function ShareModal({
     if (navigator.share) {
       navigator.share({
         title: tripTitle,
-        text: `Check out my Roamly itinerary for ${destination}!`,
+        text: `Check out my Navoryn itinerary for ${destination}!`,
         url: shareUrl,
       }).catch(() => {});
     } else {
@@ -101,7 +101,7 @@ export default function ShareModal({
   }
 
   const encodedUrl = shareUrl ? encodeURIComponent(shareUrl) : "";
-  const encodedText = encodeURIComponent(`Check out my Roamly itinerary for ${destination}!`);
+  const encodedText = encodeURIComponent(`Check out my Navoryn itinerary for ${destination}!`);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>

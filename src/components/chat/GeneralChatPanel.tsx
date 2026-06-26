@@ -205,7 +205,7 @@ export default function GeneralChatPanel({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-semibold text-white">
-                  Roamly AI
+                  Navoryn AI
                 </span>
                 <span className="rounded-full bg-sky/10 px-1.5 py-0.5 text-[10px] font-medium text-sky">
                   ✨ AI
@@ -344,7 +344,7 @@ export default function GeneralChatPanel({
             )}
           </div>
           <p className="mt-2 text-center text-[10px] text-slate-700">
-            Powered by Llama 3.3 · Shift+Enter for new line
+            Powered by Llama 3.1 · Shift+Enter for new line
           </p>
         </div>
       </div>

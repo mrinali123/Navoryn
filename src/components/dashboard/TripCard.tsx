@@ -95,7 +95,7 @@ export default function DashboardTripCard({
 
   function handleTemplate() {
     try {
-      localStorage.setItem("roamly-trip-form", JSON.stringify({
+      localStorage.setItem("navoryn-trip-form", JSON.stringify({
         destination: trip.destination,
         arrivalDate: "", arrivalTime: "",
         departureDate: "", departureTime: "",

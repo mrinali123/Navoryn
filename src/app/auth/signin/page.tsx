@@ -91,7 +91,7 @@ export default function SignInPage() {
         <div style={{ position: "relative", zIndex: 10, padding: 64 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <CompassLogo />
-            <span style={{ fontFamily: "var(--font-playfair, Georgia, serif)", fontSize: 20, fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>Roamly</span>
+            <span style={{ fontFamily: "var(--font-playfair, Georgia, serif)", fontSize: 20, fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>Navoryn</span>
           </div>
 
           <div style={{ marginTop: 64 }}>
@@ -139,7 +139,7 @@ export default function SignInPage() {
           <div className="lg:hidden text-center mb-8">
             <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
               <CompassLogo />
-              <span style={{ fontFamily: "var(--font-playfair, Georgia, serif)", fontSize: 20, fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>Roamly</span>
+              <span style={{ fontFamily: "var(--font-playfair, Georgia, serif)", fontSize: 20, fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>Navoryn</span>
             </Link>
           </div>
 

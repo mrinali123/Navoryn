@@ -23,7 +23,7 @@ const isDev = process.env.NODE_ENV !== "production";
 export const logger = pino({
   level: process.env.LOG_LEVEL ?? (isDev ? "debug" : "info"),
   // Include a static "service" field on every log line for easy filtering.
-  base: { service: "roamly" },
+  base: { service: "navoryn" },
   // ISO-8601 timestamps are machine-readable and supported by every aggregator.
   timestamp: pino.stdTimeFunctions.isoTime,
   // Serialize Error objects to { type, message, stack } instead of [Object].

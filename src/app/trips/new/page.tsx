@@ -20,7 +20,7 @@ import { countNights } from "@/lib/trip-utils";
 
 // ── constants ────────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = "roamly-trip-form";
+const STORAGE_KEY = "navoryn-trip-form";
 
 const DEFAULT_FORM: TripFormData = {
   destination: "",
@@ -738,7 +738,7 @@ export default function NewTripPage() {
               </defs>
             </svg>
             <span style={{ fontSize: 20, fontWeight: 700, background: "linear-gradient(135deg, #38BDF8, #F59E0B)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "-0.02em" }}>
-              Roamly
+              Navoryn
             </span>
           </div>
 

@@ -13,7 +13,7 @@ export default function AuthCard({ title, subtitle, children }: AuthCardProps) {
           <a href="/" className="inline-flex items-center gap-2">
             <span className="text-2xl">✈️</span>
             <span className="text-2xl font-bold text-white tracking-tight">
-              Roamly
+              Navoryn
             </span>
           </a>
         </div>

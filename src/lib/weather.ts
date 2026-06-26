@@ -74,7 +74,7 @@ export async function geocodeDestination(
   try {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(destination)}&format=json&limit=1`;
     const res = await fetch(url, {
-      headers: { "User-Agent": "Roamly/1.0 travel-app" },
+      headers: { "User-Agent": "Navoryn/1.0 travel-app" },
       cache: "no-store",
     });
     const data = await res.json();

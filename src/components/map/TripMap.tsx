@@ -54,7 +54,7 @@ export default function TripMap({ trip, activeDayIndex }: TripMapProps) {
 
     fetch(
       `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=3&lang=en`,
-      { headers: { "User-Agent": "Roamly/1.0" }, signal: AbortSignal.timeout(6_000) }
+      { headers: { "User-Agent": "Navoryn/1.0" }, signal: AbortSignal.timeout(6_000) }
     )
       .then((r) => r.json())
       .then((data) => {
@@ -128,8 +128,8 @@ export default function TripMap({ trip, activeDayIndex }: TripMapProps) {
       const { lat, lng } = (e as CustomEvent<{ lat: number; lng: number }>).detail;
       mapRef.current?.setView([lat, lng], 15);
     }
-    window.addEventListener("roamly:flyto", handleFlyTo);
-    return () => window.removeEventListener("roamly:flyto", handleFlyTo);
+    window.addEventListener("navoryn:flyto", handleFlyTo);
+    return () => window.removeEventListener("navoryn:flyto", handleFlyTo);
   }, []);
 
   // ── Marker HTML builders ──────────────────────────────────────────────────

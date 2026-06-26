@@ -59,7 +59,7 @@ async function searchCities(query: string, signal: AbortSignal): Promise<PlaceSu
 
   const res = await fetch(url, {
     signal,
-    headers: { "User-Agent": "Roamly/1.0 (travel-itinerary-app)" },
+    headers: { "User-Agent": "Navoryn/1.0 (travel-itinerary-app)" },
   });
   const data: NominatimResult[] = await res.json();
 

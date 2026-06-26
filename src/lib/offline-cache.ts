@@ -9,8 +9,8 @@ export interface CachedTripMeta {
   cachedAt: number;
 }
 
-const META_KEY = "roamly-offline-trips";
-const tripKey = (id: string) => `roamly-offline-trip-${id}`;
+const META_KEY = "navoryn-offline-trips";
+const tripKey = (id: string) => `navoryn-offline-trip-${id}`;
 const MAX_CACHED = 15;
 
 export function cacheTrip(trip: TripWithDays): void {

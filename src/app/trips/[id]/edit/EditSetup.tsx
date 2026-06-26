@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Trip, TripFormData } from "@/types/trip";
 
-const STORAGE_KEY = "roamly-trip-form";
+const STORAGE_KEY = "navoryn-trip-form";
 
 function tripToFormData(trip: Trip): TripFormData {
   return {

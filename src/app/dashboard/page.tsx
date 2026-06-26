@@ -13,7 +13,7 @@ import type { Profile } from "@/types";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Dashboard — Roamly",
+  title: "Dashboard — Navoryn",
   description: "Your travel dashboard. View and manage all your AI-planned trips.",
 };
 

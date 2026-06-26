@@ -18,18 +18,18 @@
   --glass-bg:    rgba(255,255,255,0.035);
   --glass-border: rgba(255,255,255,0.07);
 
-  /* ── Roamly design system ── */
-  --roamly-black:       #060914;
-  --roamly-navy:        #0A0F20;
-  --roamly-blue:        #38BDF8;
-  --roamly-blue-dim:    rgba(56,189,248,0.12);
-  --roamly-blue-glow:   rgba(56,189,248,0.25);
-  --roamly-gold:        #F0B429;
-  --roamly-gold-dim:    rgba(240,180,41,0.12);
-  --roamly-amber:       #F59E0B;
-  --roamly-green:       #10B981;
-  --roamly-border:      rgba(255,255,255,0.07);
-  --roamly-border-bright: rgba(255,255,255,0.14);
+  /* ── Navoryn design system ── */
+  --navoryn-black:       #060914;
+  --navoryn-navy:        #0A0F20;
+  --navoryn-blue:        #38BDF8;
+  --navoryn-blue-dim:    rgba(56,189,248,0.12);
+  --navoryn-blue-glow:   rgba(56,189,248,0.25);
+  --navoryn-gold:        #F0B429;
+  --navoryn-gold-dim:    rgba(240,180,41,0.12);
+  --navoryn-amber:       #F59E0B;
+  --navoryn-green:       #10B981;
+  --navoryn-border:      rgba(255,255,255,0.07);
+  --navoryn-border-bright: rgba(255,255,255,0.14);
   --font-display:       var(--font-playfair, Georgia, 'Times New Roman', serif);
   --font-body:          var(--font-inter, system-ui, -apple-system, sans-serif);
 }

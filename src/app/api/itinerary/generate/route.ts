@@ -155,7 +155,7 @@ async function geocodeCity(
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${q}&format=jsonv2&limit=1&accept-language=en`,
       {
-        headers: { "User-Agent": "Roamly/1.0 (portfolio project)" },
+        headers: { "User-Agent": "Navoryn/1.0 (portfolio project)" },
         signal: AbortSignal.timeout(6_000),
       }
     );
@@ -204,7 +204,7 @@ async function geocodePlaceAccurate(
 
     try {
       const res = await fetch(url, {
-        headers: { "User-Agent": "Roamly/1.0" },
+        headers: { "User-Agent": "Navoryn/1.0" },
         signal: AbortSignal.timeout(6_000),
       });
       if (!res.ok) continue;

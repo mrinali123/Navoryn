@@ -98,7 +98,7 @@ export default function SignUpPage() {
           <div className="lg:hidden text-center mb-8">
             <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
               <CompassLogo />
-              <span style={{ fontFamily: "var(--font-playfair, Georgia, serif)", fontSize: 20, fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>Roamly</span>
+              <span style={{ fontFamily: "var(--font-playfair, Georgia, serif)", fontSize: 20, fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>Navoryn</span>
             </Link>
           </div>
 

@@ -1,5 +1,5 @@
 -- =============================================================================
--- Roamly — Complete Database Schema
+-- Navoryn — Complete Database Schema
 -- Run this once in: Supabase Dashboard → SQL Editor → New query → Run
 --
 -- This is the single source of truth for the entire database.

@@ -8,7 +8,7 @@ interface NavbarProps {
   user?: { email?: string; full_name?: string } | null;
 }
 
-const RoamlyLogo = () => (
+const NavorynLogo = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
     <rect width="28" height="28" rx="7" fill="#060914"/>
     <path d="M14 4C10.1 4 7 7.3 7 11.3C7 16.1 14 24 14 24C14 24 21 16.1 21 11.3C21 7.3 17.9 4 14 4Z" fill="#38BDF8"/>
@@ -45,7 +45,7 @@ export default function Navbar({ user }: NavbarProps) {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <RoamlyLogo />
+          <NavorynLogo />
           <span
             style={{
               fontFamily: "var(--font-playfair, Georgia, serif)",
@@ -55,7 +55,7 @@ export default function Navbar({ user }: NavbarProps) {
               color: "white",
             }}
           >
-            Roamly
+            Navoryn
           </span>
         </Link>
 

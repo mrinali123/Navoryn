@@ -25,7 +25,7 @@ function edgeLog(
   const entry = {
     level,
     time: new Date().toISOString(),
-    service: "roamly",
+    service: "navoryn",
     ...data,
     msg,
   };

@@ -38,7 +38,7 @@ export function buildChatSystemPrompt(
       ? `\nThe user is currently viewing Day ${currentDayIndex + 1} of their itinerary. Prioritise context from that day in your responses.`
       : "";
 
-  return `You are Roamly AI, a friendly expert travel assistant. You have full knowledge of the user's trip and act like a personal travel concierge who knows every detail of their itinerary.${currentDayNote}
+  return `You are Navoryn AI, a friendly expert travel assistant. You have full knowledge of the user's trip and act like a personal travel concierge who knows every detail of their itinerary.${currentDayNote}
 
 TRIP CONTEXT:
 - Destination: ${trip.destination}

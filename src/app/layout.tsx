@@ -29,10 +29,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Roamly — Plan your perfect trip with AI",
-  description: "Roamly turns scattered ideas into seamless travel itineraries using AI.",
+  title: "Navoryn — Plan your perfect trip with AI",
+  description: "Navoryn turns scattered ideas into seamless travel itineraries using AI.",
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Roamly" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Navoryn" },
   formatDetection: { telephone: false },
   other: { "mobile-web-app-capable": "yes" },
   icons: {
@@ -57,7 +57,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('roamly-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('navoryn-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
           }}
         />
         <style>{`

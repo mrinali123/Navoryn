@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { openDB, type IDBPDatabase } from "idb";
 import type { TripWithDays } from "@/types/trip";
 
-const DB_NAME = "roamly-offline";
+const DB_NAME = "navoryn-offline";
 const DB_VERSION = 1;
 const STORE = "trips";
 

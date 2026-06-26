@@ -59,7 +59,7 @@ export default function ProfileForm({ profile, stats }: ProfileFormProps) {
       // Clear all locally cached trip data and form state
       try {
         const keysToRemove = Object.keys(localStorage).filter((k) =>
-          k.startsWith("roamly-")
+          k.startsWith("navoryn-")
         );
         keysToRemove.forEach((k) => localStorage.removeItem(k));
       } catch {}

@@ -172,8 +172,8 @@ export default function TripView({ trip, readOnly = false, userEmail, isOwner = 
         document.getElementById("trip-map-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 80);
     };
-    window.addEventListener("roamly:flyto", h);
-    return () => window.removeEventListener("roamly:flyto", h);
+    window.addEventListener("navoryn:flyto", h);
+    return () => window.removeEventListener("navoryn:flyto", h);
   }, []);
 
   // Ask AI event
@@ -183,8 +183,8 @@ export default function TripView({ trip, readOnly = false, userEmail, isOwner = 
       setChatInitialMessage(message);
       setChatOpen(true);
     }
-    window.addEventListener("roamly:ask-ai", h);
-    return () => window.removeEventListener("roamly:ask-ai", h);
+    window.addEventListener("navoryn:ask-ai", h);
+    return () => window.removeEventListener("navoryn:ask-ai", h);
   }, []);
 
   // Touch swipe
@@ -215,7 +215,7 @@ export default function TripView({ trip, readOnly = false, userEmail, isOwner = 
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement("a");
       a.href = url;
-      a.download = `roamly-${trip.destination.toLowerCase().replace(/\s+/g, "-")}-${trip.arrival_date}.pdf`;
+      a.download = `navoryn-${trip.destination.toLowerCase().replace(/\s+/g, "-")}-${trip.arrival_date}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -294,7 +294,7 @@ export default function TripView({ trip, readOnly = false, userEmail, isOwner = 
             ) : (
               <div style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 999, padding: "6px 16px", background: "rgba(56,189,248,0.1)", border: "1px solid rgba(56,189,248,0.3)", fontSize: 13, color: "#38BDF8" }}>
                 <Globe size={13} />
-                Crafted with Roamly —{" "}
+                Crafted with Navoryn —{" "}
                 <Link href="/auth/signup" style={{ color: "#38BDF8", textDecoration: "underline" }}>plan yours free</Link>
               </div>
             )}
@@ -683,7 +683,7 @@ export default function TripView({ trip, readOnly = false, userEmail, isOwner = 
                 transition: "transform 0.2s",
               }}
               className="sm:bottom-6 hover:scale-110 active:scale-95"
-              title="Chat with Roamly AI"
+              title="Chat with Navoryn AI"
             >
               <MessageCircle size={22} color="white" />
               <span style={{ position: "absolute", top: -4, right: -4, width: 20, height: 20, borderRadius: "50%", background: "#07090F", border: "2px solid #07090F", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: "#38BDF8", boxShadow: "0 0 8px rgba(56,189,248,0.5)" }}>
